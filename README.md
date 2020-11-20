@@ -1,5 +1,5 @@
 # Quark-Rule-Generate Usage [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-360/)
-[![asciicast](https://asciinema.org/a/374142.svg)](https://asciinema.org/a/374142)
+[![asciicast](https://asciinema.org/a/374145.svg)](https://asciinema.org/a/374145)
 ### The Idea of Detection Rules Generation
 
 1. We generate rules with native API used in the APK file. 
