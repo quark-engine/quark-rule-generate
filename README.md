@@ -1,6 +1,6 @@
 # Quark-Rule-Generate Usage [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-360/)
 ![](https://i.imgur.com/bQo1p76.png)
-[![asciicast](https://asciinema.org/a/374145.svg)](https://asciinema.org/a/374145)
+
 ### The Idea of Detection Rules Generation
 
 1. We generate rules with native API used in the APK file. 
@@ -45,7 +45,6 @@ $ python setup.py install; cd ..
 ```
 
 ### Generate Detection Rules
- 
 A simple way to generate rules with an APK.
 ```bash
 $ python start.py -a <apk-path>
@@ -59,8 +58,10 @@ $ python start.py -a <apk-path> --multiprocess 3 # Using three processes to work
 ```
 
 ### Export rules to JSON file
-
 Since [Quark-Engine](https://github.com/quark-engine/quark-engine) is using JSON file to analyze APK, here is a way to export rules from database into JSON file.
 ```bash
 $ python start.py -a <apk-path> --export <output-path>
 ```
+
+### See how it works!
+[![asciicast](https://asciinema.org/a/374145.svg)](https://asciinema.org/a/374145)
