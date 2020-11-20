@@ -1,4 +1,5 @@
 # Quark-Rule-Generate Usage [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-360/)
+![](https://i.imgur.com/bQo1p76.png)
 [![asciicast](https://asciinema.org/a/374145.svg)](https://asciinema.org/a/374145)
 ### The Idea of Detection Rules Generation
 
