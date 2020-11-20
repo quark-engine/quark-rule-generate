@@ -1,0 +1,4 @@
+[submodule "quark-engine"]
+	path = quark-engine
+	url = https://github.com/quark-engine/quark-engine.git
+	branch = "dev"
