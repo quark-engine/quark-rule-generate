@@ -1,6 +1,6 @@
 # Quark-Rule-Generate Usage
 
-### The idea of Detection Rules Generation
+### The Idea of Detection Rules Generation
 
 1. We generate rules with native API used in the APK file. 
    So first, we will find each native API used in the APK.
