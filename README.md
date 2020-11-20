@@ -27,6 +27,8 @@ $ sudo bash scripts/setup_db.sh
 $ git clone https://github.com/quark-engine/quark-rule-generate.git; cd quark-rule-generate/
 $ pipenv install --skip-lock
 $ pipenv shell
+$ git submodule update --remote; cd quark-engine/
+$ python setup.py install; cd ..
 ```
 
 ### Generate Detection Rules
