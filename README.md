@@ -1,4 +1,4 @@
-# Quark-Rule-Generate Usage [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-360/)
+# Quark-Rule-Generate Usage [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/18z/quark-rules/blob/master/LICENSE)
 ![](https://i.imgur.com/bQo1p76.png)
 
 ### The Idea of Detection Rules Generation
