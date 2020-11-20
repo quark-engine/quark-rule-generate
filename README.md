@@ -1,5 +1,16 @@
 # Quark-Rule-Generate Usage
 
+### The idea of Detection Rules Generation
+
+1. We generate rules with native API used in the APK file. 
+   So first, we will find each native API used in the APK.
+   
+2. We find and create all combinations of the native API pair (one rule).
+
+3. We test every native API pair and see if those behavior got caught in the APK.
+
+4. If we find 100% confidence for one behavior (one detection rule), we insert this rule into database.
+
 ### MongoDB Setup
 
 We store and manage rules with MongoDB, so we need to setup database before generating detection rules for quark engine.
