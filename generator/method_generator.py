@@ -134,8 +134,8 @@ class MethodCombGenerator:
 
                 _comb = {
                     "crime": "",
-                    "x1_permission": [],
-                    "x2n3n4_comb": [
+                    "permission": [],
+                    "api": [
                         {
                             "class": api1.class_name,
                             "method": api1.method_name,
@@ -147,7 +147,7 @@ class MethodCombGenerator:
                             "descriptor": api2.descriptor
                         }
                     ],
-                    "yscore": 1
+                    "score": 1
                 }
                 comb = GenRuleObject(_comb)
 
