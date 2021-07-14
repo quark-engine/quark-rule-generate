@@ -18,7 +18,7 @@ from quark.Objects.quark import Quark
 
 from db.database import DataBase
 
-from utils.tools import distribute
+from utils.tools import distribute, api_filter
 from itertools import repeat
 
 db = DataBase()
@@ -52,7 +52,15 @@ db = DataBase()
     is_flag=True,
     help="Debug mode, it will delete apk analying progress after finish",
 )
-def main(apk, multiprocess, debug, export):
+@click.option(
+    "-s",
+    "--stage",
+    default=1,
+    type=click.INT,
+    show_default=True,
+    help="The stage of rule generate",
+)
+def main(apk, multiprocess, debug, export, stage):
     """Quark rule generate project"""
 
     apk = AndroidSampleModel(apk)
@@ -85,7 +93,22 @@ def main(apk, multiprocess, debug, export):
         return
 
     # Apis generate
-    api_generator = ApiGenerator(apk.apis)
+    primary, secondary, p_count = api_filter(apk, 0.2)
+    
+    if stage == 1:
+        first_apis = primary
+        second_apis = primary
+    elif stage == 2:
+        first_apis = primary
+        second_apis = secondary
+    elif stage == 3:
+        first_apis = secondary
+        second_apis = primary
+    elif stage == 4:
+        first_apis = secondary
+        second_apis = secondary
+        
+    api_generator = ApiGenerator(first_apis)
     apis = list(api_generator.initialize())
 
     tqdm.write(f"Analyzing apk with {multiprocess} process")
@@ -109,7 +132,7 @@ def main(apk, multiprocess, debug, export):
         tqdm.write(f"The rest of APIs number: {len(new_apis)}")
 
         generator = MethodCombGenerator(apk)
-        generator.first_stage_rule_generate(new_apis)
+        generator.first_stage_rule_generate(new_apis, primary)
 
     else:
 
@@ -135,7 +158,7 @@ def main(apk, multiprocess, debug, export):
 
         jobs = list()
         for i in range(multiprocess):
-            p = Process(target=generate, args=(api_pools[i], i+1, apk))
+            p = Process(target=generate, args=(api_pools[i], second_apis, i+1, apk))
             jobs.append(p)
             p.start()
 
@@ -168,8 +191,8 @@ def rule_obj_generate(rule, f_name):
     description = f"{f_name}. {cls1}{md1}->{cls2}{md2}"
     rule_obj = {
         "crime": description,
-        "x1_permission": [],
-        "x2n3n4_comb": [
+        "permission": [],
+        "api": [
             {
                 "class": cls1,
                 "method": md1,
@@ -181,14 +204,14 @@ def rule_obj_generate(rule, f_name):
                 "descriptor": des2
             }
         ],
-        "yscore": 1,
+        "score": 1,
     }
     return rule_obj
 
 
-def generate(pool, pbar, apk):
+def generate(f_pool, s_pool, pbar, apk):
     generator = MethodCombGenerator(apk, pbar)
-    generator.first_stage_rule_generate(pool)
+    generator.first_stage_rule_generate(f_pool, s_pool)
 
 
 if __name__ == "__main__":

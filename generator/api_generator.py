@@ -32,9 +32,3 @@ class ApiGenerator:
         for api in self.apis:
             api_model = APIModel(api)
             yield api_model
-
-        
-
-
-
-    
