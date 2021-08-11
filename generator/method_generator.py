@@ -185,6 +185,4 @@ class MethodCombGenerator:
         # Apk completed analyzing
         outter_loop.clear()
         outter_loop.close()
-
-        self.set_progress_status(1)
         return
