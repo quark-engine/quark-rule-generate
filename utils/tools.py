@@ -56,4 +56,26 @@ def distribute(seq, sort):
     """
     new_seq = numpy.array_split(seq, sort)
     return new_seq
+
+def api_filter(apk, percentile_rank):
+    statistic_result = {}
+    api_pool = apk.apis
+    for api in api_pool:
+        number_from = len(apk.apk_analysis.apkinfo.upperfunc(api))
+        statistic_result[api] = number_from
+
+    sorted_result = {k: v for k, v in sorted(statistic_result.items(), key=lambda item: item[1])}
     
+    threshold = len(api_pool) * percentile_rank
+    api_above = []
+    api_under = []
+    p_count = {"first": [], "second": []}
+    for i, (api, number) in enumerate(sorted_result.items()):
+        if i < threshold:
+            api_above.append(api)
+            p_count["first"].append(number)
+            continue
+        p_count["second"].append(number)
+        api_under.append(api)
+        
+    return api_above, api_under, p_count

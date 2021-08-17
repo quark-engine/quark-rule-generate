@@ -1,4 +1,4 @@
-from utils import tools
+from utils.tools import sha256sum
 from quark.Objects.quark import Quark
 from db.database import DataBase
 
@@ -13,7 +13,7 @@ class AndroidSampleModel:
 
         self.db = DataBase()
         self.apk = apk
-        self.apk_hash = tools.sha256sum(apk)
+        self.apk_hash = sha256sum(apk)
         self.parsable = True
 
         self.db.create_sample_data(self.obj)
@@ -73,14 +73,14 @@ class AndroidSampleModel:
         if not self.parsable:
             return None
 
-        result = list()
+        result = set()
         for cls in self.apk_analysis.apkinfo.analysis.get_external_classes():
             for meth_analysis in cls.get_methods():
                 if meth_analysis.is_android_api():
-                    result.append(meth_analysis)
+                    result.add(meth_analysis)
 
-        return result
-
+        return list(result)
+            
     @property
     def status(self):
         if not self.parsable:

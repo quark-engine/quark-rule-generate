@@ -81,7 +81,7 @@ class MethodCombGenerator:
 
         return True
 
-    def first_stage_rule_generate(self, apis_pool):
+    def first_stage_rule_generate(self, first_apis_pool, second_apis_pool):
         """
         Extract all api usage in apk current apk then generate method combination.
 
@@ -96,16 +96,16 @@ class MethodCombGenerator:
         if not self.check_progress():
             return
 
-        api_generator = ApiGenerator(self.apk.apis)
-        origin_apis = list(api_generator.generate())
+        api_generator = ApiGenerator(second_apis_pool)
+        inner_api_pool = list(api_generator.generate())
 
         # Setup progress bar
-        origin_apis_num = len(origin_apis)
+        second_api_pool_num = len(inner_api_pool)
         outter_desc = f"Core No.{self.pbar}"
-        outter_loop = tqdm(apis_pool, desc=outter_desc,
+        outter_loop = tqdm(first_apis_pool, desc=outter_desc,
                            position=self.pbar, leave=False)
 
-        for api1 in apis_pool:
+        for api1 in first_apis_pool:
             outter_loop.update(1)
 
             # Tag the method
@@ -122,8 +122,8 @@ class MethodCombGenerator:
 
             matched_list = []
             id_list = []
-            for num, api2 in enumerate(origin_apis, start=1):
-                inner_desc = f"{num}/{origin_apis_num}"
+            for num, api2 in enumerate(inner_api_pool, start=1):
+                inner_desc = f"{num}/{second_api_pool_num}"
                 outter_loop.set_postfix(inner_loop=inner_desc, refresh=True)
 
                 api = api2
@@ -134,8 +134,8 @@ class MethodCombGenerator:
 
                 _comb = {
                     "crime": "",
-                    "x1_permission": [],
-                    "x2n3n4_comb": [
+                    "permission": [],
+                    "api": [
                         {
                             "class": api1.class_name,
                             "method": api1.method_name,
@@ -147,7 +147,7 @@ class MethodCombGenerator:
                             "descriptor": api2.descriptor
                         }
                     ],
-                    "yscore": 1
+                    "score": 1
                 }
                 comb = GenRuleObject(_comb)
 
@@ -185,6 +185,4 @@ class MethodCombGenerator:
         # Apk completed analyzing
         outter_loop.clear()
         outter_loop.close()
-
-        self.set_progress_status(1)
         return

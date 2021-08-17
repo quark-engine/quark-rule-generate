@@ -8,7 +8,7 @@ import click
 import json
 
 from pymongo import MongoClient
-from multiprocessing import Pool, Process
+from multiprocessing import Pool, Process, Event
 
 from tqdm import tqdm
 from model.android_sample_model import AndroidSampleModel
@@ -18,7 +18,7 @@ from quark.Objects.quark import Quark
 
 from db.database import DataBase
 
-from utils.tools import distribute
+from utils.tools import distribute, api_filter
 from itertools import repeat
 
 db = DataBase()
@@ -52,7 +52,15 @@ db = DataBase()
     is_flag=True,
     help="Debug mode, it will delete apk analying progress after finish",
 )
-def main(apk, multiprocess, debug, export):
+@click.option(
+    "-s",
+    "--stage",
+    default=1,
+    type=click.INT,
+    show_default=True,
+    help="The stage of rule generate",
+)
+def main(apk, multiprocess, debug, export, stage):
     """Quark rule generate project"""
 
     apk = AndroidSampleModel(apk)
@@ -85,7 +93,22 @@ def main(apk, multiprocess, debug, export):
         return
 
     # Apis generate
-    api_generator = ApiGenerator(apk.apis)
+    primary, secondary, p_count = api_filter(apk, 0.2)
+    
+    if stage == 1:
+        first_apis = primary
+        second_apis = primary
+    elif stage == 2:
+        first_apis = primary
+        second_apis = secondary
+    elif stage == 3:
+        first_apis = secondary
+        second_apis = primary
+    elif stage == 4:
+        first_apis = secondary
+        second_apis = secondary
+        
+    api_generator = ApiGenerator(first_apis)
     apis = list(api_generator.initialize())
 
     tqdm.write(f"Analyzing apk with {multiprocess} process")
@@ -109,42 +132,15 @@ def main(apk, multiprocess, debug, export):
         tqdm.write(f"The rest of APIs number: {len(new_apis)}")
 
         generator = MethodCombGenerator(apk)
-        generator.first_stage_rule_generate(new_apis)
+        generator.first_stage_rule_generate(new_apis, primary)
 
     else:
-
-        result = db.search_sample_data(apk.id)
-
-        new_apis = []
-
-        if result is not None:
-            done_apis = result["progress"]
-
-            new_apis = []
-            for single_api in apis:
-                if not single_api.id in done_apis:
-                    new_apis.append(single_api)
-        else:
-            new_apis = apis
-
-        tqdm.write(f"APIs usage number: {len(apis)}")
-        tqdm.write(f"Analysis api done: {len(done_apis)}")
-        tqdm.write(f"The rest of APIs number: {len(new_apis)}")
-
-        api_pools = distribute(new_apis, multiprocess)
-
-        jobs = list()
-        for i in range(multiprocess):
-            p = Process(target=generate, args=(api_pools[i], i+1, apk))
-            jobs.append(p)
-            p.start()
-
-        for j in jobs:
-            j.join()
-
+        generate_multiprocess(apk, apis, second_apis, multiprocess)
+        
+    db.set_status(apk.id, 1)
     if debug:
         tqdm.write("Start with debug mode, will delete data after process.")
-        db.search_sample_data(apk.id)
+        result = db.search_sample_data(apk.id)
         filename = result["filename"]
         progress = result["progress"]
         api_num = result["api_num"]
@@ -168,8 +164,8 @@ def rule_obj_generate(rule, f_name):
     description = f"{f_name}. {cls1}{md1}->{cls2}{md2}"
     rule_obj = {
         "crime": description,
-        "x1_permission": [],
-        "x2n3n4_comb": [
+        "permission": [],
+        "api": [
             {
                 "class": cls1,
                 "method": md1,
@@ -181,14 +177,62 @@ def rule_obj_generate(rule, f_name):
                 "descriptor": des2
             }
         ],
-        "yscore": 1,
+        "score": 1,
     }
     return rule_obj
 
+def generate_multiprocess(apk, apis, second_apis, multiprocess):
 
-def generate(pool, pbar, apk):
+    result = db.search_sample_data(apk.id)
+
+    new_apis = []
+
+    if result is not None:
+        done_apis = result["progress"]
+
+        new_apis = []
+        for single_api in apis:
+            if not single_api.id in done_apis:
+                new_apis.append(single_api)
+    else:
+        new_apis = apis
+
+    # tqdm.write(f"APIs usage number: {len(apis)}")
+    # tqdm.write(f"Analysis api done: {len(done_apis)}")
+    # tqdm.write(f"The rest of APIs number: {len(new_apis)}")
+    
+    api_pools = distribute(new_apis, multiprocess)
+    
+    event = Event()
+
+    jobs = list()
+    for i in range(multiprocess):
+        p = Process(target=generate, args=(api_pools[i], second_apis, i+1, apk, event))
+        jobs.append(p)
+        p.start()
+
+    if len(new_apis) > multiprocess*2:
+        while True:
+            if event.is_set():
+                print("Exiting all child processess..")
+                for i in jobs:
+                    #Terminate each process
+                    i.terminate()
+                print("break")
+                #Terminating main process
+                time.sleep(1)
+                break
+            time.sleep(2)
+        generate_multiprocess(apk, new_apis, second_apis, multiprocess)
+    
+    for j in jobs:
+        j.join()
+        
+
+def generate(f_pool, s_pool, pbar, apk, event):
     generator = MethodCombGenerator(apk, pbar)
-    generator.first_stage_rule_generate(pool)
+    generator.first_stage_rule_generate(f_pool, s_pool)
+    event.set()
 
 
 if __name__ == "__main__":
